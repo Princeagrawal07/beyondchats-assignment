@@ -1,30 +1,38 @@
-FROM php:8.2-cli
+FROM php:8.2-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
     libzip-dev \
     zip \
-    && docker-php-ext-install zip pdo pdo_sqlite
+    curl \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl
+
+# Enable Apache rewrite
+RUN a2enmod rewrite
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy backend code
+COPY . /var/www/html
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
-WORKDIR /var/www
-
-# Copy project files
-COPY . .
-
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Create SQLite database
-RUN mkdir -p database && touch database/database.sqlite
+# Permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Expose port
-EXPOSE 10000
+EXPOSE 80
 
-# Start Laravel
-CMD php artisan serve --host=0.0.0.0 --port=10000
+# Start Apache
+CMD ["apache2-foreground"]
