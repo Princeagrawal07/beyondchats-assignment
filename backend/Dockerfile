@@ -1,38 +1,32 @@
-FROM php:8.2-apache
+# Base image
+FROM php:8.2-cli
+
+# Set working directory
+WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libonig-dev \
     libzip-dev \
     zip \
     curl \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl
-
-# Enable Apache rewrite
-RUN a2enmod rewrite
-
-# Set working directory
-WORKDIR /var/www/html
-
-# Copy backend code
-COPY . /var/www/html
+    && docker-php-ext-install zip pdo pdo_mysql
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Copy project files
+COPY . .
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Generate app key if not exists
+RUN php artisan key:generate || true
 
-# Expose port
-EXPOSE 80
+# Expose port (Render uses 10000)
+EXPOSE 10000
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Start Laravel server
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
