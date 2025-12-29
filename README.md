@@ -1,179 +1,234 @@
-BeyondChats Assignment – Phase 1
-📌 Overview
+# BeyondChats Internship Assignment
 
-This project implements Phase 1 of the BeyondChats assignment.
-It includes scraping the oldest blog articles from BeyondChats, storing them in a database, and exposing CRUD REST APIs to manage these articles.
+This repository contains the complete solution for the BeyondChats Full Stack Web Developer Intern assignment.
 
-The solution uses:
+The project is divided into phases:
+- Phase 1: Scraping articles, storing them in a database, and creating CRUD APIs
+- Phase 2: Enhancing articles using Google Search and an LLM
+- Phase 3: Frontend (API-based verification)
 
-Laravel for backend APIs and database
+---
 
-Node.js for web scraping
+## Tech Stack
 
-SQLite as the database (simple local setup)
+Backend:
+- Laravel 12
+- PHP 8+
+- SQLite
 
-🧱 Tech Stack
-Backend
+Scraping & Automation:
+- Node.js
+- Axios
+- Cheerio
+- google-it
 
-Laravel 12
+LLM:
+- OpenAI API (GPT-4o-mini)
 
-PHP 8.x
+Frontend:
+- React.js (optional / bonus)
 
-SQLite
+---
 
-REST APIs
+## Project Structure
 
-Scraper
-
-Node.js
-
-Axios
-
-Cheerio
-
-📁 Project Structure
 beyondchats-assignment/
-│
-├── backend/          # Laravel backend (APIs + DB)
-│   ├── app/
-│   ├── routes/
-│   ├── database/
-│   └── ...
-│
-├── scraper/          # Node.js scraping scripts
-│   ├── scrape.js
-│   ├── package.json
-│   └── node_modules/
-│
+├── backend/        (Laravel backend + APIs)
+├── scraper/        (Phase 1 scraper)
+├── phase2/         (Phase 2 rewrite script)
+├── frontend/       (React frontend – optional)
 └── README.md
 
-🔄 Data Flow / Architecture
-BeyondChats Blog Website
-        ↓
-Node.js Scraper (Axios + Cheerio)
-        ↓
-POST /api/articles
-        ↓
-Laravel API
-        ↓
-SQLite Database
+---
 
-🧩 Phase 1 – Features Implemented
-✅ Web Scraping
+# Phase 1 – Scraping & CRUD APIs
 
-Starts scraping from the last page of BeyondChats blogs
+## Objective
+- Scrape the 5 oldest articles from https://beyondchats.com/blogs/
+- Store them in a database
+- Expose CRUD APIs for articles
 
-Handles pagination edge-case (last page contains fewer articles)
+---
 
-Collects the 5 oldest articles
+## Local Setup – Phase 1
 
-Extracts:
+### 1. Clone Repository
 
-Title
+git clone <your-github-repo-url>  
+cd beyondchats-assignment
 
-Source URL
+---
 
-Short excerpt (fallback used due to scraping restrictions)
+### 2. Backend Setup
 
-Note: Full article content scraping is restricted by site protection and is addressed in Phase 2.
+cd backend  
+composer install  
+copy .env.example .env  
+php artisan key:generate  
 
-✅ Database
+Create SQLite database:
 
-SQLite database
+php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
 
-articles table with fields:
+Update .env:
 
-id
+DB_CONNECTION=sqlite  
+DB_DATABASE=database/database.sqlite  
 
-title
+Run migrations:
 
-content
+php artisan migrate  
 
-source_url
+Start server:
 
-is_ai_generated
+php artisan serve  
 
-references
-
-timestamps
-
-✅ CRUD REST APIs
-
-CRUD APIs are implemented using Laravel apiResource.
-
-Operation	Method	Endpoint
-Create	POST	/api/articles
-Read (All)	GET	/api/articles
-Read (One)	GET	/api/articles/{id}
-Update	PUT	/api/articles/{id}
-Delete	DELETE	/api/articles/{id}
-⚙️ Local Setup Instructions
-🔹 Prerequisites
-
-PHP 8+
-
-Composer
-
-Node.js
-
-npm
-
-🔹 Backend Setup (Laravel)
-cd backend
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate
-php artisan serve
-
-
-Backend will run at:
+Backend runs at:
 
 http://127.0.0.1:8000
 
-🔹 Scraper Setup (Node.js)
-cd scraper
-npm install
-node scrape.js
+---
 
+### 3. Article APIs
+
+GET    /api/articles  
+POST   /api/articles  
+GET    /api/articles/{id}  
+PUT    /api/articles/{id}  
+DELETE /api/articles/{id}  
+
+---
+
+### 4. Phase 1 Scraper
+
+cd scraper  
+npm install  
+node scrape.js  
 
 This script:
+- Navigates to the last pages of BeyondChats blogs
+- Extracts the 5 oldest articles
+- Stores them via backend APIs
 
-Scrapes the 5 oldest articles
+---
 
-Sends them to Laravel using POST /api/articles
+# Phase 2 – AI Article Enhancement
 
-🔍 API Verification
+## Objective
+For each article:
+- Search the article title on Google
+- Fetch 2 external blog articles
+- Scrape their content
+- Rewrite the original article using an LLM
+- Update the article in the backend
 
-After running the scraper, open:
+---
 
-http://127.0.0.1:8000/api/articles
+## Local Setup – Phase 2
 
+### 1. Environment Variables
 
-You should see the scraped articles stored in the database.
+Create phase2/.env:
 
-📝 Notes & Assumptions
+BACKEND_URL=http://127.0.0.1:8000  
+OPENAI_API_KEY=your_openai_api_key_here  
 
-BeyondChats uses bot protection, so full article body scraping may fail.
+---
 
-For Phase 1, storing titles, URLs, and excerpts satisfies requirements.
+### 2. Install Dependencies
 
-Full content rewriting and Google search integration are part of Phase 2.
+cd phase2  
+npm install  
 
-🚀 Phase 1 Status
+---
 
-✅ Completed
+### 3. Run Phase 2 Script
 
-Scraping implemented
+node rewrite.js  
 
-Database storage complete
+This script:
+- Fetches articles from backend
+- Searches Google for reference articles
+- Uses fallback references if Google blocks results
+- Scrapes reference content
+- Calls OpenAI to rewrite the article
+- Updates the article via API
 
-CRUD APIs implemented and tested
+---
 
-🔗 Live Link
+# Architecture Diagram
 
-(Frontend will be added in Phase 3)
+BeyondChats Blog Website  
+        ↓  
+Phase 1 Scraper (Node.js)  
+        ↓  
+Laravel Backend API (SQLite)  
+        ↓  
+Phase 2 Script (Node.js)  
+  - Google Search  
+  - Reference Scraping  
+  - OpenAI LLM  
+        ↓  
+Updated Articles Stored in Database  
 
-👨‍💻 Author
+---
 
-Prince Agrawal
+# Data Flow Diagram
+
+User / Script  
+     ↓  
+Scraper (Phase 1)  
+     ↓  
+POST /api/articles  
+     ↓  
+SQLite Database  
+     ↓  
+GET /api/articles  
+     ↓  
+Phase 2 Script  
+     ↓  
+Google Search + Scraping  
+     ↓  
+OpenAI API  
+     ↓  
+PUT /api/articles/{id}  
+
+---
+
+# Live Link / Verification
+
+Backend API (local):
+
+http://127.0.0.1:8000/api/articles  
+
+This endpoint shows:
+- Original articles
+- AI-enhanced articles
+- Reference links
+- AI-generated flag
+
+Frontend (optional):
+- React frontend can consume the same API endpoint
+
+---
+
+## Notes
+
+- Some websites block scraping (Cloudflare protection)
+- Fallback reference articles are used when scraping fails
+- OpenAI requests may timeout depending on API limits
+
+---
+
+## Status
+
+Phase 1: Completed  
+Phase 2: Completed  
+Documentation: Completed  
+
+---
+
+## Author
+
+Prince Agrawal  
+B.Tech CSE (2nd Year)
